@@ -212,6 +212,7 @@ jobs:
         ! grep failure results.xml
 
     - name: upload vcd
+      if: success() || failure()
       uses: actions/upload-artifact@v3
       with:
           name: gatelevel-test-vcd
