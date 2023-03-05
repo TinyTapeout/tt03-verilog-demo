@@ -68,13 +68,15 @@ jobs:
       run: ./tt/tt_tool.py --print-cell-category >> $GITHUB_STEP_SUMMARY
 
     - name: populate src cache
-      uses: actions/cache@v3
+      if: success() || failure()
+      uses: actions/cache/save@v3
       with:
         path: src
         key: ${{ runner.os }}-src-${{ github.run_id }}
 
     - name: populate runs cache
-      uses: actions/cache@v3
+      if: success() || failure()
+      uses: actions/cache/save@v3
       with:
         path: runs
         key: ${{ runner.os }}-runs-${{ github.run_id }}
@@ -130,21 +132,23 @@ jobs:
   artifact:
     needs:
     - gds
+    if: success() || failure()
     runs-on: ubuntu-latest
     steps:
     - name: restore src cache
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v3
       with:
         path: src
         key: ${{ runner.os }}-src-${{ github.run_id }}
 
     - name: restore runs cache
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v3
       with:
         path: runs
         key: ${{ runner.os }}-runs-${{ github.run_id }}
 
     - name: upload artifact
+      if: ${{ needs.gds.result == 'success' }}
       uses: actions/upload-artifact@v3
       with:
           # path depends on the tag and the module name
@@ -154,6 +158,16 @@ jobs:
             runs/wokwi/results/final/*
             runs/wokwi/reports/metrics.csv
             runs/wokwi/reports/synthesis/1-synthesis.AREA 0.stat.rpt
+
+    - name: upload failure report
+      if: ${{ needs.gds.result == 'failure' }}
+      uses: actions/upload-artifact@v3
+      with:
+          # path depends on the tag and the module name
+          name: GDS-reports
+          path: |
+            src/*
+            runs/wokwi/reports/*
 
 ##############################################################
 # Run gate level tests
