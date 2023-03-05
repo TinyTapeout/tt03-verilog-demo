@@ -30,3 +30,8 @@ jobs:
         # make will return success even if the test fails, so check for failure in the results.xml
         ! grep failure results.xml
 
+    - name: upload vcd
+      uses: actions/upload-artifact@v3
+      with:
+          name: test-vcd
+          path: src/tb.vcd
